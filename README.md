@@ -104,7 +104,7 @@ npx live-server frontend --port=3000
 Open `http://localhost:3000` in your browser.
 
 **Demo credentials:**  
-Email: `admin@iv-innovations.com`  
+Email: `lomashbadole042@gmail.com`  
 Password: `admin123`
 
 ---
