@@ -1,0 +1,501 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Purchase Orders — PO Management</title>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="../css/main.css"/>
+</head>
+<body>
+<div class="app-shell">
+  <!-- Sidebar (same as index) -->
+  <aside class="sidebar">
+    <div class="sidebar-logo">
+      <div class="sidebar-logo-text">PO<span>mgmt</span></div>
+      <div class="sidebar-sub">IV Innovations Pvt. Ltd.</div>
+    </div>
+    <nav class="sidebar-nav">
+      <div class="nav-section-label">Main</div>
+      <a href="../index.html" class="nav-link">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>Dashboard
+      </a>
+      <a href="purchase-orders.html" class="nav-link active">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>Purchase Orders
+      </a>
+      <div class="nav-section-label" style="margin-top:.5rem">Manage</div>
+      <a href="vendors.html" class="nav-link">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>Vendors
+      </a>
+      <a href="products.html" class="nav-link">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 2 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg>Products
+      </a>
+    </nav>
+    <div class="sidebar-user">
+      <div class="user-avatar" id="userInitials">A</div>
+      <div><div class="user-name" id="userName">—</div><div class="user-email" id="userEmail">—</div></div>
+      <button class="logout-btn" onclick="logout()">⏻</button>
+    </div>
+  </aside>
+
+  <main class="main-content">
+    <div class="topbar">
+      <div>
+        <div class="page-title">Purchase Orders</div>
+        <div class="page-subtitle">Manage all procurement orders</div>
+      </div>
+      <button class="btn btn-primary" onclick="openCreateModal()">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        New Purchase Order
+      </button>
+    </div>
+
+    <div class="content-area">
+      <div id="alertBox" style="display:none"></div>
+
+      <!-- Filters -->
+      <div class="filter-bar">
+        <div class="search-input-wrap" style="max-width:200px">
+          <span class="search-icon">🔍</span>
+          <input type="text" class="form-input" id="filterStatus" placeholder="Filter status..." style="padding-left:2.2rem;" oninput="filterOrders()"/>
+        </div>
+        <select class="form-select" id="filterStatusSelect" style="max-width:160px" onchange="filterOrders()">
+          <option value="">All Statuses</option>
+          <option value="draft">Draft</option>
+          <option value="pending">Pending</option>
+          <option value="approved">Approved</option>
+          <option value="received">Received</option>
+          <option value="cancelled">Cancelled</option>
+        </select>
+        <button class="btn btn-ghost btn-sm" onclick="loadOrders()">↺ Refresh</button>
+      </div>
+
+      <!-- Table -->
+      <div class="card" style="padding:0;overflow:hidden">
+        <div class="table-wrapper" style="border:none;border-radius:0">
+          <table>
+            <thead>
+              <tr>
+                <th>Reference No.</th>
+                <th>Vendor</th>
+                <th>Items</th>
+                <th>Subtotal</th>
+                <th>Tax (5%)</th>
+                <th>Total</th>
+                <th>Status</th>
+                <th>Created</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="poTableBody">
+              <tr><td colspan="9" class="loading-state"><div class="spinner"></div></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════
+     CREATE PO MODAL
+═══════════════════════════════════════════════════════ -->
+<div class="modal-backdrop" id="createModal">
+  <div class="modal" style="max-width:860px">
+    <div class="modal-header">
+      <div class="modal-title">Create Purchase Order</div>
+      <button class="modal-close" onclick="closeCreateModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <div id="modalAlert" style="display:none"></div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Vendor <span class="required">*</span></label>
+          <select class="form-select" id="poVendor">
+            <option value="">Loading vendors...</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Notes</label>
+          <input type="text" class="form-input" id="poNotes" placeholder="Optional order notes"/>
+        </div>
+      </div>
+
+      <!-- Product Rows -->
+      <label class="form-label" style="margin-bottom:.6rem">
+        Order Items <span class="required">*</span>
+        <span style="color:var(--text-muted);font-weight:400"> — Add multiple products</span>
+      </label>
+
+      <div class="items-table-wrapper">
+        <div class="items-table-header">
+          <span>Product</span>
+          <span>Qty</span>
+          <span>Unit Price (₹)</span>
+          <span>Line Total</span>
+          <span></span>
+        </div>
+        <div id="itemsContainer">
+          <!-- Rows added dynamically -->
+        </div>
+      </div>
+
+      <button class="btn btn-ghost btn-sm" onclick="addItemRow()" style="margin-top:.75rem">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        Add Product Row
+      </button>
+
+      <!-- Totals Box -->
+      <div class="po-total-box">
+        <div class="total-row">
+          <span>Subtotal</span>
+          <span class="amount" id="totalSubtotal">₹0.00</span>
+        </div>
+        <div class="total-row">
+          <span>Tax <span class="tax-badge">5% GST</span></span>
+          <span class="amount" id="totalTax">₹0.00</span>
+        </div>
+        <div class="total-row grand">
+          <span>Total Amount</span>
+          <span class="amount" id="totalGrand">₹0.00</span>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeCreateModal()">Cancel</button>
+      <button class="btn btn-primary" id="submitPOBtn" onclick="submitPO()">
+        Create Purchase Order
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- VIEW PO MODAL -->
+<div class="modal-backdrop" id="viewModal">
+  <div class="modal" style="max-width:860px">
+    <div class="modal-header">
+      <div>
+        <div class="modal-title" id="viewPORef">PO Details</div>
+        <div id="viewPOStatus" style="margin-top:.25rem"></div>
+      </div>
+      <button class="modal-close" onclick="closeViewModal()">✕</button>
+    </div>
+    <div class="modal-body" id="viewModalBody">Loading...</div>
+    <div class="modal-footer" id="viewModalFooter"></div>
+  </div>
+</div>
+
+<script src="../js/api.js"></script>
+<script>
+// ── State ──────────────────────────────────────────────────
+const user = requireAuth();
+if (user) {
+  document.getElementById('userName').textContent = user.full_name || 'User';
+  document.getElementById('userEmail').textContent = user.email || '';
+  document.getElementById('userInitials').textContent = (user.full_name||'U')[0].toUpperCase();
+}
+
+let allOrders = [];
+let allProducts = [];
+let rowCounter = 0;
+
+// ── Load Data ──────────────────────────────────────────────
+async function loadOrders() {
+  const tbody = document.getElementById('poTableBody');
+  tbody.innerHTML = `<tr><td colspan="9" class="loading-state"><div class="spinner"></div></td></tr>`;
+  try {
+    allOrders = await API.getPurchaseOrders();
+    renderOrders(allOrders);
+  } catch (err) {
+    tbody.innerHTML = `<tr><td colspan="9" class="empty-state" style="color:var(--danger)">${err.message}</td></tr>`;
+  }
+}
+
+function renderOrders(orders) {
+  const tbody = document.getElementById('poTableBody');
+  if (!orders.length) {
+    tbody.innerHTML = `<tr><td colspan="9" class="empty-state"><h3>No orders found</h3><p>Create your first purchase order to get started</p></td></tr>`;
+    return;
+  }
+  tbody.innerHTML = orders.map(o => `
+    <tr>
+      <td><code style="font-size:.82rem">${o.reference_no}</code></td>
+      <td><strong style="font-size:.88rem">${o.vendor?.name||'—'}</strong></td>
+      <td style="color:var(--text-muted)">${o.items?.length||0}</td>
+      <td style="font-family:var(--font-mono);font-size:.85rem">${formatCurrency(o.subtotal)}</td>
+      <td style="font-family:var(--font-mono);font-size:.85rem;color:var(--warning)">${formatCurrency(o.tax_amount)}</td>
+      <td style="font-family:var(--font-mono);color:var(--accent);font-weight:600">${formatCurrency(o.total_amount)}</td>
+      <td>${statusBadge(o.status)}</td>
+      <td style="color:var(--text-muted);font-size:.82rem">${formatDate(o.created_at)}</td>
+      <td>
+        <div style="display:flex;gap:.4rem">
+          <button class="btn btn-ghost btn-sm btn-icon" onclick="viewPO(${o.id})" title="View">👁</button>
+          ${o.status === 'draft' ? `<button class="btn btn-danger btn-sm btn-icon" onclick="deletePO(${o.id})" title="Delete">🗑</button>` : ''}
+        </div>
+      </td>
+    </tr>
+  `).join('');
+}
+
+function filterOrders() {
+  const status = document.getElementById('filterStatusSelect').value;
+  const filtered = status ? allOrders.filter(o => o.status === status) : allOrders;
+  renderOrders(filtered);
+}
+
+// ── Create PO Modal ────────────────────────────────────────
+
+async function openCreateModal() {
+  document.getElementById('createModal').classList.add('open');
+  document.getElementById('itemsContainer').innerHTML = '';
+  rowCounter = 0;
+
+  // Load vendors
+  try {
+    const vendors = await API.getVendors();
+    const sel = document.getElementById('poVendor');
+    sel.innerHTML = `<option value="">— Select Vendor —</option>` +
+      vendors.map(v => `<option value="${v.id}">${v.name} (⭐ ${v.rating})</option>`).join('');
+  } catch(e) {
+    document.getElementById('poVendor').innerHTML = `<option>Error loading vendors</option>`;
+  }
+
+  // Load products into module-level cache
+  try {
+    allProducts = await API.getProducts();
+  } catch(e) {}
+
+  addItemRow(); // Start with one row
+  updateTotals();
+}
+
+function closeCreateModal() {
+  document.getElementById('createModal').classList.remove('open');
+  document.getElementById('modalAlert').style.display = 'none';
+  document.getElementById('poNotes').value = '';
+}
+
+// ── Dynamic Item Row Logic ─────────────────────────────────
+// This is the core "Add Row" requirement from the assignment.
+// Each row allows picking a product (auto-fills price), quantity,
+// and shows a live line total. Removing rows recalculates.
+
+function addItemRow() {
+  rowCounter++;
+  const id = `row_${rowCounter}`;
+  const productOptions = allProducts.map(p =>
+    `<option value="${p.id}" data-price="${p.unit_price}">${p.name} (₹${p.unit_price})</option>`
+  ).join('');
+
+  const row = document.createElement('div');
+  row.className = 'item-row';
+  row.id = id;
+  row.innerHTML = `
+    <select class="form-select" id="${id}_product" onchange="onProductChange('${id}')">
+      <option value="">— Select Product —</option>
+      ${productOptions}
+    </select>
+    <input type="number" class="form-input" id="${id}_qty" value="1" min="1" oninput="recalcRow('${id}')"/>
+    <input type="number" class="form-input" id="${id}_price" value="" min="0" step="0.01" placeholder="Auto" oninput="recalcRow('${id}')"/>
+    <span class="item-total" id="${id}_total">₹0.00</span>
+    <button class="btn btn-ghost btn-icon btn-sm" onclick="removeItemRow('${id}')" style="color:var(--danger)" title="Remove">✕</button>
+  `;
+  document.getElementById('itemsContainer').appendChild(row);
+}
+
+function removeItemRow(id) {
+  const rows = document.querySelectorAll('.item-row');
+  if (rows.length <= 1) return; // Keep at least one row
+  document.getElementById(id)?.remove();
+  updateTotals();
+}
+
+function onProductChange(rowId) {
+  const sel = document.getElementById(`${rowId}_product`);
+  const opt = sel.options[sel.selectedIndex];
+  const price = parseFloat(opt.dataset.price) || 0;
+  document.getElementById(`${rowId}_price`).value = price ? price.toFixed(2) : '';
+  recalcRow(rowId);
+}
+
+function recalcRow(rowId) {
+  const qty   = parseFloat(document.getElementById(`${rowId}_qty`)?.value) || 0;
+  const price = parseFloat(document.getElementById(`${rowId}_price`)?.value) || 0;
+  const lineTotal = qty * price;
+  const el = document.getElementById(`${rowId}_total`);
+  if (el) el.textContent = formatCurrency(lineTotal);
+  updateTotals();
+}
+
+function updateTotals() {
+  let subtotal = 0;
+  document.querySelectorAll('.item-row').forEach(row => {
+    const qty   = parseFloat(row.querySelector('[id$="_qty"]')?.value) || 0;
+    const price = parseFloat(row.querySelector('[id$="_price"]')?.value) || 0;
+    subtotal += qty * price;
+  });
+  const taxAmount  = subtotal * 0.05;
+  const grandTotal = subtotal + taxAmount;
+
+  document.getElementById('totalSubtotal').textContent = formatCurrency(subtotal);
+  document.getElementById('totalTax').textContent      = formatCurrency(taxAmount);
+  document.getElementById('totalGrand').textContent    = formatCurrency(grandTotal);
+}
+
+// ── Submit PO ──────────────────────────────────────────────
+
+async function submitPO() {
+  const alertEl = document.getElementById('modalAlert');
+  alertEl.style.display = 'none';
+  const vendorId = parseInt(document.getElementById('poVendor').value);
+  if (!vendorId) { showModalAlert('Please select a vendor', 'error'); return; }
+
+  const items = [];
+  let valid = true;
+  document.querySelectorAll('.item-row').forEach(row => {
+    const productId = parseInt(row.querySelector('[id$="_product"]')?.value);
+    const qty       = parseInt(row.querySelector('[id$="_qty"]')?.value);
+    const price     = parseFloat(row.querySelector('[id$="_price"]')?.value);
+    if (!productId || !qty || qty < 1) { valid = false; return; }
+    items.push({ product_id: productId, quantity: qty, unit_price: price || undefined });
+  });
+
+  if (!valid || !items.length) { showModalAlert('Add at least one product with quantity', 'error'); return; }
+
+  const btn = document.getElementById('submitPOBtn');
+  btn.disabled = true;
+  btn.textContent = 'Creating...';
+
+  try {
+    await API.createPurchaseOrder({
+      vendor_id: vendorId,
+      items,
+      notes: document.getElementById('poNotes').value || undefined,
+    });
+    closeCreateModal();
+    showAlert('✅ Purchase order created successfully!', 'success');
+    loadOrders();
+  } catch (err) {
+    showModalAlert(err.message, 'error');
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'Create Purchase Order';
+  }
+}
+
+// ── View PO ────────────────────────────────────────────────
+
+async function viewPO(id) {
+  document.getElementById('viewModal').classList.add('open');
+  document.getElementById('viewModalBody').innerHTML = `<div class="loading-state"><div class="spinner"></div></div>`;
+  document.getElementById('viewModalFooter').innerHTML = '';
+
+  try {
+    const po = await API.getPurchaseOrder(id);
+    document.getElementById('viewPORef').textContent = po.reference_no;
+    document.getElementById('viewPOStatus').innerHTML = statusBadge(po.status);
+
+    document.getElementById('viewModalBody').innerHTML = `
+      <div class="form-row" style="margin-bottom:1rem">
+        <div>
+          <div class="form-label">Vendor</div>
+          <strong>${po.vendor?.name}</strong><br/>
+          <span style="font-size:.82rem;color:var(--text-muted)">${po.vendor?.contact_email}</span>
+        </div>
+        <div>
+          <div class="form-label">Created By</div>
+          <span>${po.created_by || '—'}</span><br/>
+          <span style="font-size:.82rem;color:var(--text-muted)">${formatDate(po.created_at)}</span>
+        </div>
+      </div>
+      ${po.notes ? `<p style="margin-bottom:1rem;color:var(--text-muted);font-size:.88rem;font-style:italic">"${po.notes}"</p>` : ''}
+
+      <div class="table-wrapper" style="margin-bottom:1rem">
+        <table>
+          <thead><tr><th>Product</th><th>SKU</th><th>Qty</th><th>Unit Price</th><th>Line Total</th></tr></thead>
+          <tbody>
+            ${po.items.map(item => `
+              <tr>
+                <td><strong style="font-size:.88rem">${item.product?.name}</strong></td>
+                <td><code>${item.product?.sku}</code></td>
+                <td>${item.quantity}</td>
+                <td style="font-family:var(--font-mono)">${formatCurrency(item.unit_price)}</td>
+                <td style="font-family:var(--font-mono);color:var(--accent)">${formatCurrency(item.line_total)}</td>
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>
+      </div>
+
+      <div class="po-total-box">
+        <div class="total-row"><span>Subtotal</span><span class="amount">${formatCurrency(po.subtotal)}</span></div>
+        <div class="total-row"><span>Tax <span class="tax-badge">${(po.tax_rate*100).toFixed(0)}% GST</span></span><span class="amount">${formatCurrency(po.tax_amount)}</span></div>
+        <div class="total-row grand"><span>Total Amount</span><span class="amount">${formatCurrency(po.total_amount)}</span></div>
+      </div>
+    `;
+
+    // Status action buttons
+    const transitions = {
+      draft:    [{label:'Submit for Approval', next:'pending', cls:'btn-primary'}, {label:'Cancel', next:'cancelled', cls:'btn-danger'}],
+      pending:  [{label:'Approve', next:'approved', cls:'btn-primary'}, {label:'Cancel', next:'cancelled', cls:'btn-danger'}],
+      approved: [{label:'Mark Received', next:'received', cls:'btn-primary'}, {label:'Cancel', next:'cancelled', cls:'btn-danger'}],
+    };
+    const actions = transitions[po.status] || [];
+    const footer = document.getElementById('viewModalFooter');
+    footer.innerHTML = `<button class="btn btn-ghost" onclick="closeViewModal()">Close</button>` +
+      actions.map(a => `<button class="btn ${a.cls}" onclick="changeStatus(${po.id},'${a.next}')">${a.label}</button>`).join('');
+
+  } catch (err) {
+    document.getElementById('viewModalBody').innerHTML = `<p style="color:var(--danger)">${err.message}</p>`;
+  }
+}
+
+async function changeStatus(id, newStatus) {
+  try {
+    await API.updatePOStatus(id, newStatus);
+    closeViewModal();
+    showAlert(`✅ Order status updated to "${newStatus}"`, 'success');
+    loadOrders();
+  } catch (err) {
+    showAlert(err.message, 'error');
+  }
+}
+
+function closeViewModal() {
+  document.getElementById('viewModal').classList.remove('open');
+}
+
+async function deletePO(id) {
+  if (!confirm('Delete this DRAFT order? This cannot be undone.')) return;
+  try {
+    await API.deletePurchaseOrder(id);
+    showAlert('Order deleted.', 'success');
+    loadOrders();
+  } catch (err) {
+    showAlert(err.message, 'error');
+  }
+}
+
+// ── Helpers ────────────────────────────────────────────────
+function showAlert(msg, type) {
+  const el = document.getElementById('alertBox');
+  el.className = `alert alert-${type}`;
+  el.textContent = msg;
+  el.style.display = 'block';
+  setTimeout(() => el.style.display = 'none', 5000);
+}
+function showModalAlert(msg, type) {
+  const el = document.getElementById('modalAlert');
+  el.className = `alert alert-${type}`;
+  el.textContent = msg;
+  el.style.display = 'block';
+}
+
+// Open from hash
+if (window.location.hash === '#new') openCreateModal();
+
+loadOrders();
+</script>
+</body>
+</html>

@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>PO System — Login</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="../css/main.css"/>
+  <style>
+    body { display:flex; align-items:center; justify-content:center; min-height:100vh; padding:2rem; }
+
+    .login-wrapper {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      max-width: 900px;
+      width: 100%;
+      background: var(--surface);
+      border-radius: 24px;
+      overflow: hidden;
+      box-shadow: 0 40px 80px rgba(0,0,0,0.5);
+      border: 1px solid var(--border);
+    }
+
+    .login-brand {
+      background: linear-gradient(135deg, var(--accent) 0%, #00d4ff 100%);
+      padding: 3rem;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      position: relative;
+      overflow: hidden;
+    }
+    .login-brand::before {
+      content: '';
+      position: absolute;
+      width: 300px; height: 300px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.08);
+      top: -100px; right: -100px;
+    }
+    .login-brand::after {
+      content: '';
+      position: absolute;
+      width: 200px; height: 200px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.05);
+      bottom: 50px; left: -60px;
+    }
+    .brand-logo { font-family:'Syne',sans-serif; font-size:1.8rem; font-weight:800; color:#fff; }
+    .brand-logo span { opacity:0.7; }
+    .brand-tagline { font-size:2.2rem; font-weight:700; color:#fff; line-height:1.2; font-family:'Syne',sans-serif; }
+    .brand-tagline em { font-style:normal; opacity:0.7; font-size:1rem; font-weight:400; display:block; margin-top:.5rem; font-family:'DM Sans',sans-serif; }
+    .brand-stats { display:flex; gap:1.5rem; }
+    .stat { color:rgba(255,255,255,0.9); }
+    .stat-num { font-size:1.5rem; font-weight:700; font-family:'Syne',sans-serif; }
+    .stat-label { font-size:0.7rem; opacity:0.7; text-transform:uppercase; letter-spacing:.1em; }
+
+    .login-form-side { padding:3rem; }
+    .login-title { font-family:'Syne',sans-serif; font-size:1.8rem; font-weight:700; color:var(--text-primary); margin-bottom:.5rem; }
+    .login-sub { color:var(--text-muted); font-size:.9rem; margin-bottom:2rem; }
+
+    .demo-box {
+      background: rgba(0, 212, 132, 0.08);
+      border: 1px solid rgba(0, 212, 132, 0.2);
+      border-radius: 10px;
+      padding: 1rem;
+      margin-bottom: 1.5rem;
+      font-size: .82rem;
+      color: var(--text-muted);
+    }
+    .demo-box strong { color:var(--accent); display:block; margin-bottom:.3rem; }
+
+    @media(max-width:640px){
+      .login-wrapper{grid-template-columns:1fr;}
+      .login-brand{display:none;}
+    }
+  </style>
+</head>
+<body>
+<div class="login-wrapper">
+  <div class="login-brand">
+    <div class="brand-logo">PO<span>mgmt</span></div>
+    <div class="brand-tagline">
+      Procurement<br/>made smart.
+      <em>ERP micro-service for modern teams</em>
+    </div>
+    <div class="brand-stats">
+      <div class="stat"><div class="stat-num">5%</div><div class="stat-label">Auto Tax</div></div>
+      <div class="stat"><div class="stat-num">AI</div><div class="stat-label">Powered</div></div>
+      <div class="stat"><div class="stat-num">JWT</div><div class="stat-label">Auth</div></div>
+    </div>
+  </div>
+
+  <div class="login-form-side">
+    <div class="login-title">Welcome back</div>
+    <div class="login-sub">Sign in to continue to your dashboard</div>
+
+    <div class="demo-box">
+      <strong>🎯 Demo Credentials</strong>
+      Email: admin@iv-innovations.com<br/>
+      Password: admin123
+    </div>
+
+    <div id="loginError" class="alert alert-error" style="display:none"></div>
+
+    <div class="form-group">
+      <label class="form-label">Email Address</label>
+      <input type="email" id="email" class="form-input" placeholder="you@example.com" value="admin@iv-innovations.com"/>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Password</label>
+      <input type="password" id="password" class="form-input" placeholder="••••••••" value="admin123"/>
+    </div>
+
+    <button class="btn btn-primary btn-full" id="loginBtn" onclick="handleLogin()">
+      Sign In
+    </button>
+
+    <p style="text-align:center;margin-top:1.5rem;font-size:.85rem;color:var(--text-muted);">
+      Don't have an account? 
+      <a href="#" onclick="showRegister()" style="color:var(--accent);">Create one</a>
+    </p>
+
+    <!-- Register Form (hidden by default) -->
+    <div id="registerSection" style="display:none;margin-top:1rem;border-top:1px solid var(--border);padding-top:1.5rem;">
+      <div class="form-group">
+        <label class="form-label">Full Name</label>
+        <input type="text" id="regName" class="form-input" placeholder="John Doe"/>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Email</label>
+        <input type="email" id="regEmail" class="form-input" placeholder="you@example.com"/>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Password</label>
+        <input type="password" id="regPassword" class="form-input" placeholder="Min 6 characters"/>
+      </div>
+      <button class="btn btn-secondary btn-full" onclick="handleRegister()">Create Account</button>
+    </div>
+  </div>
+</div>
+
+<script src="../js/api.js"></script>
+<script>
+  // Redirect if already logged in
+  if (localStorage.getItem('po_token')) {
+    window.location.href = '../index.html';
+  }
+
+  function showRegister() {
+    const sec = document.getElementById('registerSection');
+    sec.style.display = sec.style.display === 'none' ? 'block' : 'none';
+  }
+
+  async function handleLogin() {
+    const btn = document.getElementById('loginBtn');
+    const errEl = document.getElementById('loginError');
+    const email = document.getElementById('email').value.trim();
+    const password = document.getElementById('password').value;
+
+    if (!email || !password) {
+      showError(errEl, 'Please enter email and password');
+      return;
+    }
+
+    btn.disabled = true;
+    btn.textContent = 'Signing in...';
+    errEl.style.display = 'none';
+
+    try {
+      const data = await API.login(email, password);
+      localStorage.setItem('po_token', data.access_token);
+      localStorage.setItem('po_user', JSON.stringify(data.user));
+      window.location.href = '../index.html';
+    } catch (err) {
+      showError(errEl, err.message || 'Login failed. Check credentials.');
+      btn.disabled = false;
+      btn.textContent = 'Sign In';
+    }
+  }
+
+  async function handleRegister() {
+    const name = document.getElementById('regName').value.trim();
+    const email = document.getElementById('regEmail').value.trim();
+    const password = document.getElementById('regPassword').value;
+    const errEl = document.getElementById('loginError');
+
+    if (!name || !email || !password) { showError(errEl,'Fill all fields'); return; }
+
+    try {
+      await API.register(name, email, password);
+      document.getElementById('email').value = email;
+      document.getElementById('password').value = password;
+      document.getElementById('registerSection').style.display = 'none';
+      showError(errEl, '✅ Account created! Logging in...', 'success');
+      setTimeout(handleLogin, 800);
+    } catch (err) {
+      showError(errEl, err.message || 'Registration failed');
+    }
+  }
+
+  function showError(el, msg, type='error') {
+    el.className = `alert alert-${type}`;
+    el.textContent = msg;
+    el.style.display = 'block';
+  }
+
+  // Enter key support
+  document.addEventListener('keypress', e => {
+    if (e.key === 'Enter') handleLogin();
+  });
+</script>
+</body>
+</html>

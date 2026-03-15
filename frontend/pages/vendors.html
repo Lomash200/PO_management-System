@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Vendors — PO Management</title>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="../css/main.css"/>
+</head>
+<body>
+<div class="app-shell">
+  <aside class="sidebar">
+    <div class="sidebar-logo">
+      <div class="sidebar-logo-text">PO<span>mgmt</span></div>
+      <div class="sidebar-sub">IV Innovations Pvt. Ltd.</div>
+    </div>
+    <nav class="sidebar-nav">
+      <div class="nav-section-label">Main</div>
+      <a href="../index.html" class="nav-link">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>Dashboard
+      </a>
+      <a href="purchase-orders.html" class="nav-link">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/></svg>Purchase Orders
+      </a>
+      <div class="nav-section-label" style="margin-top:.5rem">Manage</div>
+      <a href="vendors.html" class="nav-link active">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>Vendors
+      </a>
+      <a href="products.html" class="nav-link">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 2 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg>Products
+      </a>
+    </nav>
+    <div class="sidebar-user">
+      <div class="user-avatar" id="userInitials">A</div>
+      <div><div class="user-name" id="userName">—</div><div class="user-email" id="userEmail">—</div></div>
+      <button class="logout-btn" onclick="logout()">⏻</button>
+    </div>
+  </aside>
+
+  <main class="main-content">
+    <div class="topbar">
+      <div>
+        <div class="page-title">Vendors</div>
+        <div class="page-subtitle">Manage supplier directory</div>
+      </div>
+      <button class="btn btn-primary" onclick="openModal()">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        Add Vendor
+      </button>
+    </div>
+
+    <div class="content-area">
+      <div id="alertBox" style="display:none"></div>
+
+      <div class="filter-bar">
+        <div class="search-input-wrap">
+          <span class="search-icon">🔍</span>
+          <input type="text" class="form-input" id="searchInput" placeholder="Search vendors..." oninput="filterVendors()" style="padding-left:2.2rem"/>
+        </div>
+        <button class="btn btn-ghost btn-sm" onclick="loadVendors()">↺ Refresh</button>
+      </div>
+
+      <div class="card" style="padding:0;overflow:hidden">
+        <div class="table-wrapper" style="border:none;border-radius:0">
+          <table>
+            <thead>
+              <tr>
+                <th>Vendor Name</th>
+                <th>Email</th>
+                <th>Phone</th>
+                <th>Address</th>
+                <th>Rating</th>
+                <th>Status</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="vendorsTableBody">
+              <tr><td colspan="7" class="loading-state"><div class="spinner"></div></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<!-- Vendor Modal -->
+<div class="modal-backdrop" id="vendorModal">
+  <div class="modal" style="max-width:520px">
+    <div class="modal-header">
+      <div class="modal-title" id="modalTitle">Add Vendor</div>
+      <button class="modal-close" onclick="closeModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <div id="modalAlert" style="display:none"></div>
+      <input type="hidden" id="vendorId"/>
+      <div class="form-row">
+        <div class="form-group" style="grid-column:1/-1">
+          <label class="form-label">Vendor Name <span class="required">*</span></label>
+          <input type="text" class="form-input" id="vName" placeholder="e.g. Tech Supplies Co."/>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Contact Email <span class="required">*</span></label>
+          <input type="email" class="form-input" id="vEmail" placeholder="sales@vendor.com"/>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Phone</label>
+          <input type="text" class="form-input" id="vPhone" placeholder="+91-9876543210"/>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Address</label>
+        <input type="text" class="form-input" id="vAddress" placeholder="City, State"/>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Rating (0–5)</label>
+        <input type="number" class="form-input" id="vRating" min="0" max="5" step="0.1" value="0" style="max-width:120px"/>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal()">Cancel</button>
+      <button class="btn btn-primary" id="saveVendorBtn" onclick="saveVendor()">Save Vendor</button>
+    </div>
+  </div>
+</div>
+
+<script src="../js/api.js"></script>
+<script>
+  const user = requireAuth();
+  if (user) {
+    document.getElementById('userName').textContent = user.full_name || 'User';
+    document.getElementById('userEmail').textContent = user.email || '';
+    document.getElementById('userInitials').textContent = (user.full_name||'U')[0].toUpperCase();
+  }
+
+  let allVendors = [];
+
+  async function loadVendors() {
+    const tbody = document.getElementById('vendorsTableBody');
+    tbody.innerHTML = `<tr><td colspan="7" class="loading-state"><div class="spinner"></div></td></tr>`;
+    try {
+      allVendors = await API.getVendors();
+      renderVendors(allVendors);
+    } catch (err) {
+      tbody.innerHTML = `<tr><td colspan="7" class="empty-state" style="color:var(--danger)">${err.message}</td></tr>`;
+    }
+  }
+
+  function renderVendors(vendors) {
+    const tbody = document.getElementById('vendorsTableBody');
+    if (!vendors.length) {
+      tbody.innerHTML = `<tr><td colspan="7" class="empty-state"><h3>No vendors found</h3></td></tr>`;
+      return;
+    }
+    tbody.innerHTML = vendors.map(v => `
+      <tr>
+        <td><strong style="font-size:.9rem">${v.name}</strong></td>
+        <td style="color:var(--text-muted);font-size:.85rem">${v.contact_email}</td>
+        <td style="color:var(--text-muted);font-size:.85rem">${v.contact_phone || '—'}</td>
+        <td style="color:var(--text-muted);font-size:.82rem">${v.address || '—'}</td>
+        <td>${starRating(v.rating)}</td>
+        <td>${v.is_active ? '<span class="badge badge-active">Active</span>' : '<span class="badge badge-inactive">Inactive</span>'}</td>
+        <td>
+          <div style="display:flex;gap:.4rem">
+            <button class="btn btn-ghost btn-sm" onclick="editVendor(${v.id})">Edit</button>
+            <button class="btn btn-danger btn-sm" onclick="deleteVendor(${v.id})">Delete</button>
+          </div>
+        </td>
+      </tr>
+    `).join('');
+  }
+
+  function filterVendors() {
+    const q = document.getElementById('searchInput').value.toLowerCase();
+    renderVendors(allVendors.filter(v => v.name.toLowerCase().includes(q) || v.contact_email.toLowerCase().includes(q)));
+  }
+
+  function openModal(vendor = null) {
+    document.getElementById('vendorModal').classList.add('open');
+    document.getElementById('modalAlert').style.display = 'none';
+    document.getElementById('modalTitle').textContent = vendor ? 'Edit Vendor' : 'Add Vendor';
+    document.getElementById('vendorId').value = vendor?.id || '';
+    document.getElementById('vName').value = vendor?.name || '';
+    document.getElementById('vEmail').value = vendor?.contact_email || '';
+    document.getElementById('vPhone').value = vendor?.contact_phone || '';
+    document.getElementById('vAddress').value = vendor?.address || '';
+    document.getElementById('vRating').value = vendor?.rating || 0;
+  }
+
+  function closeModal() { document.getElementById('vendorModal').classList.remove('open'); }
+
+  async function editVendor(id) {
+    try {
+      const v = await API.getVendor(id);
+      openModal(v);
+    } catch(e) { showAlert(e.message, 'error'); }
+  }
+
+  async function saveVendor() {
+    const id = document.getElementById('vendorId').value;
+    const alertEl = document.getElementById('modalAlert');
+    alertEl.style.display = 'none';
+
+    const data = {
+      name: document.getElementById('vName').value.trim(),
+      contact_email: document.getElementById('vEmail').value.trim(),
+      contact_phone: document.getElementById('vPhone').value.trim() || undefined,
+      address: document.getElementById('vAddress').value.trim() || undefined,
+      rating: parseFloat(document.getElementById('vRating').value) || 0,
+    };
+
+    if (!data.name || !data.contact_email) {
+      alertEl.className = 'alert alert-error';
+      alertEl.textContent = 'Name and email are required';
+      alertEl.style.display = 'block';
+      return;
+    }
+
+    const btn = document.getElementById('saveVendorBtn');
+    btn.disabled = true; btn.textContent = 'Saving...';
+
+    try {
+      if (id) {
+        await API.updateVendor(id, data);
+        showAlert('✅ Vendor updated successfully', 'success');
+      } else {
+        await API.createVendor(data);
+        showAlert('✅ Vendor created successfully', 'success');
+      }
+      closeModal();
+      loadVendors();
+    } catch (err) {
+      alertEl.className = 'alert alert-error';
+      alertEl.textContent = err.message;
+      alertEl.style.display = 'block';
+    } finally {
+      btn.disabled = false; btn.textContent = 'Save Vendor';
+    }
+  }
+
+  async function deleteVendor(id) {
+    if (!confirm('Deactivate this vendor?')) return;
+    try {
+      await API.deleteVendor(id);
+      showAlert('Vendor deactivated.', 'success');
+      loadVendors();
+    } catch(err) { showAlert(err.message, 'error'); }
+  }
+
+  function showAlert(msg, type) {
+    const el = document.getElementById('alertBox');
+    el.className = `alert alert-${type}`;
+    el.textContent = msg;
+    el.style.display = 'block';
+    setTimeout(() => el.style.display = 'none', 5000);
+  }
+
+  loadVendors();
+</script>
+</body>
+</html>

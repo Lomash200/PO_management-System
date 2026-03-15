@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>PO Management System — Dashboard</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="css/main.css"/>
+</head>
+<body>
+<div class="app-shell">
+
+  <!-- Sidebar -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-logo">
+      <div class="sidebar-logo-text">PO<span>mgmt</span></div>
+      <div class="sidebar-sub">IV Innovations Pvt. Ltd.</div>
+    </div>
+    <nav class="sidebar-nav">
+      <div class="nav-section-label">Main</div>
+      <a href="index.html" class="nav-link active" id="nav-dashboard">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+        Dashboard
+      </a>
+      <a href="pages/purchase-orders.html" class="nav-link" id="nav-orders">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+        Purchase Orders
+      </a>
+      <div class="nav-section-label" style="margin-top:.5rem">Manage</div>
+      <a href="pages/vendors.html" class="nav-link" id="nav-vendors">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        Vendors
+      </a>
+      <a href="pages/products.html" class="nav-link" id="nav-products">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 2 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg>
+        Products
+      </a>
+    </nav>
+    <div class="sidebar-user">
+      <div class="user-avatar" id="userInitials">A</div>
+      <div>
+        <div class="user-name" id="userName">Loading...</div>
+        <div class="user-email" id="userEmail">—</div>
+      </div>
+      <button class="logout-btn" onclick="logout()" title="Logout">⏻</button>
+    </div>
+  </aside>
+
+  <!-- Main Content -->
+  <main class="main-content">
+    <div class="topbar">
+      <div>
+        <div class="page-title">Dashboard</div>
+        <div class="page-subtitle">Overview of procurement activity</div>
+      </div>
+      <a href="pages/purchase-orders.html#new" class="btn btn-primary">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        New PO
+      </a>
+    </div>
+
+    <div class="content-area">
+      <!-- Stats -->
+      <div class="stats-grid" id="statsGrid">
+        <div class="stat-card">
+          <div class="stat-icon blue"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#3b9eff" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/></svg></div>
+          <div><div class="stat-value" id="totalPOs">—</div><div class="stat-label">Total Orders</div></div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon orange"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#f5a623" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></div>
+          <div><div class="stat-value" id="pendingPOs">—</div><div class="stat-label">Pending Approval</div></div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon green"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#00d484" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg></div>
+          <div><div class="stat-value" id="approvedPOs">—</div><div class="stat-label">Approved</div></div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon green"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#00d484" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></div>
+          <div><div class="stat-value" id="totalValue">—</div><div class="stat-label">Total Value (incl. tax)</div></div>
+        </div>
+      </div>
+
+      <!-- Recent POs -->
+      <div class="card fade-in">
+        <div class="card-header">
+          <div class="card-title">Recent Purchase Orders</div>
+          <a href="pages/purchase-orders.html" class="btn btn-ghost btn-sm">View all →</a>
+        </div>
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Reference</th>
+                <th>Vendor</th>
+                <th>Items</th>
+                <th>Total Amount</th>
+                <th>Status</th>
+                <th>Date</th>
+              </tr>
+            </thead>
+            <tbody id="recentPOsBody">
+              <tr><td colspan="6" class="loading-state"><div class="spinner"></div></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<script src="js/api.js"></script>
+<script>
+  const user = requireAuth();
+  if (user) {
+    document.getElementById('userName').textContent = user.full_name || 'User';
+    document.getElementById('userEmail').textContent = user.email || '';
+    document.getElementById('userInitials').textContent = (user.full_name || 'U')[0].toUpperCase();
+  }
+
+  async function loadDashboard() {
+    try {
+      const orders = await API.getPurchaseOrders();
+
+      document.getElementById('totalPOs').textContent = orders.length;
+      document.getElementById('pendingPOs').textContent = orders.filter(o => o.status === 'pending').length;
+      document.getElementById('approvedPOs').textContent = orders.filter(o => o.status === 'approved').length;
+      const total = orders.reduce((s, o) => s + (o.total_amount || 0), 0);
+      document.getElementById('totalValue').textContent = formatCurrency(total);
+
+      const recent = orders.slice(0, 10);
+      const tbody = document.getElementById('recentPOsBody');
+      if (!recent.length) {
+        tbody.innerHTML = `<tr><td colspan="6" class="empty-state">No purchase orders yet. <a href="pages/purchase-orders.html#new">Create one →</a></td></tr>`;
+        return;
+      }
+      tbody.innerHTML = recent.map(o => `
+        <tr>
+          <td><code>${o.reference_no}</code></td>
+          <td>${o.vendor?.name || '—'}</td>
+          <td>${o.items?.length || 0} item${(o.items?.length||0)!==1?'s':''}</td>
+          <td style="font-family:var(--font-mono);color:var(--accent)">${formatCurrency(o.total_amount)}</td>
+          <td>${statusBadge(o.status)}</td>
+          <td style="color:var(--text-muted)">${formatDate(o.created_at)}</td>
+        </tr>
+      `).join('');
+    } catch (err) {
+      document.getElementById('recentPOsBody').innerHTML = `<tr><td colspan="6" class="empty-state" style="color:var(--danger)">${err.message}</td></tr>`;
+    }
+  }
+
+  loadDashboard();
+</script>
+</body>
+</html>

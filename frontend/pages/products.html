@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Products — PO Management</title>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="../css/main.css"/>
+</head>
+<body>
+<div class="app-shell">
+  <aside class="sidebar">
+    <div class="sidebar-logo">
+      <div class="sidebar-logo-text">PO<span>mgmt</span></div>
+      <div class="sidebar-sub">IV Innovations Pvt. Ltd.</div>
+    </div>
+    <nav class="sidebar-nav">
+      <div class="nav-section-label">Main</div>
+      <a href="../index.html" class="nav-link">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>Dashboard
+      </a>
+      <a href="purchase-orders.html" class="nav-link">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/></svg>Purchase Orders
+      </a>
+      <div class="nav-section-label" style="margin-top:.5rem">Manage</div>
+      <a href="vendors.html" class="nav-link">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>Vendors
+      </a>
+      <a href="products.html" class="nav-link active">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 2 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg>Products
+      </a>
+    </nav>
+    <div class="sidebar-user">
+      <div class="user-avatar" id="userInitials">A</div>
+      <div><div class="user-name" id="userName">—</div><div class="user-email" id="userEmail">—</div></div>
+      <button class="logout-btn" onclick="logout()">⏻</button>
+    </div>
+  </aside>
+
+  <main class="main-content">
+    <div class="topbar">
+      <div>
+        <div class="page-title">Products</div>
+        <div class="page-subtitle">Manage product catalog with AI descriptions</div>
+      </div>
+      <button class="btn btn-primary" onclick="openModal()">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        Add Product
+      </button>
+    </div>
+
+    <div class="content-area">
+      <div id="alertBox" style="display:none"></div>
+
+      <div class="filter-bar">
+        <div class="search-input-wrap">
+          <span class="search-icon">🔍</span>
+          <input type="text" class="form-input" id="searchInput" placeholder="Search products or SKU..." oninput="filterProducts()" style="padding-left:2.2rem"/>
+        </div>
+        <select class="form-select" id="filterCategory" style="max-width:180px" onchange="filterProducts()">
+          <option value="">All Categories</option>
+        </select>
+        <button class="btn btn-ghost btn-sm" onclick="loadProducts()">↺ Refresh</button>
+      </div>
+
+      <!-- Products Grid -->
+      <div id="productsGrid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:1rem">
+        <div class="loading-state" style="grid-column:1/-1"><div class="spinner"></div></div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<!-- Product Modal -->
+<div class="modal-backdrop" id="productModal">
+  <div class="modal" style="max-width:580px">
+    <div class="modal-header">
+      <div class="modal-title" id="modalTitle">Add Product</div>
+      <button class="modal-close" onclick="closeModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <div id="modalAlert" style="display:none"></div>
+      <input type="hidden" id="productId"/>
+
+      <div class="form-row">
+        <div class="form-group" style="grid-column:1/-1">
+          <label class="form-label" style="display:flex;align-items:center;justify-content:space-between">
+            <span>Product Name <span class="required">*</span></span>
+            <button type="button" class="ai-btn" onclick="previewAIDesc()" id="aiPreviewBtn">✨ AI Description</button>
+          </label>
+          <input type="text" class="form-input" id="pName" placeholder="e.g. Intel Core i7 Processor" oninput="clearAIPreview()"/>
+          <div id="aiPreviewBox" style="display:none"></div>
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">SKU <span class="required">*</span></label>
+          <input type="text" class="form-input" id="pSKU" placeholder="PROD-001"/>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Category</label>
+          <input type="text" class="form-input" id="pCategory" placeholder="Electronics"/>
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Unit Price (₹) <span class="required">*</span></label>
+          <input type="number" class="form-input" id="pPrice" min="0" step="0.01" placeholder="0.00"/>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Stock Level</label>
+          <input type="number" class="form-input" id="pStock" min="0" value="0"/>
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Unit</label>
+          <input type="text" class="form-input" id="pUnit" value="unit" placeholder="unit / kg / roll"/>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Description</label>
+        <textarea class="form-textarea" id="pDesc" placeholder="Product description..."></textarea>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal()">Cancel</button>
+      <button class="btn btn-primary" id="saveProductBtn" onclick="saveProduct()">Save Product</button>
+    </div>
+  </div>
+</div>
+
+<script src="../js/api.js"></script>
+<script>
+  const user = requireAuth();
+  if (user) {
+    document.getElementById('userName').textContent = user.full_name || 'User';
+    document.getElementById('userEmail').textContent = user.email || '';
+    document.getElementById('userInitials').textContent = (user.full_name||'U')[0].toUpperCase();
+  }
+
+  let allProducts = [];
+
+  async function loadProducts() {
+    const grid = document.getElementById('productsGrid');
+    grid.innerHTML = `<div class="loading-state" style="grid-column:1/-1"><div class="spinner"></div></div>`;
+    try {
+      allProducts = await API.getProducts();
+      populateCategories();
+      renderProducts(allProducts);
+    } catch (err) {
+      grid.innerHTML = `<div class="empty-state" style="grid-column:1/-1;color:var(--danger)">${err.message}</div>`;
+    }
+  }
+
+  function populateCategories() {
+    const cats = [...new Set(allProducts.map(p => p.category).filter(Boolean))].sort();
+    const sel = document.getElementById('filterCategory');
+    sel.innerHTML = `<option value="">All Categories</option>` + cats.map(c => `<option>${c}</option>`).join('');
+  }
+
+  function renderProducts(products) {
+    const grid = document.getElementById('productsGrid');
+    if (!products.length) {
+      grid.innerHTML = `<div class="empty-state" style="grid-column:1/-1"><h3>No products found</h3></div>`;
+      return;
+    }
+    grid.innerHTML = products.map(p => `
+      <div class="card fade-in" style="padding:1.25rem">
+        <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:.75rem">
+          <div style="flex:1;min-width:0">
+            <div style="font-family:var(--font-display);font-weight:600;font-size:.95rem;margin-bottom:.2rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${p.name}</div>
+            <code style="font-size:.75rem">${p.sku}</code>
+          </div>
+          <span class="badge ${p.is_active ? 'badge-active' : 'badge-inactive'}" style="margin-left:.5rem;flex-shrink:0">${p.is_active ? 'Active' : 'Inactive'}</span>
+        </div>
+
+        ${p.category ? `<div style="font-size:.75rem;color:var(--text-muted);margin-bottom:.5rem">📁 ${p.category}</div>` : ''}
+
+        <div style="display:flex;justify-content:space-between;margin-bottom:.75rem">
+          <div>
+            <div style="font-size:.72rem;color:var(--text-muted)">Unit Price</div>
+            <div style="font-family:var(--font-mono);color:var(--accent);font-weight:600">${formatCurrency(p.unit_price)}</div>
+          </div>
+          <div style="text-align:right">
+            <div style="font-size:.72rem;color:var(--text-muted)">Stock</div>
+            <div style="font-weight:600;color:${p.stock_level < 10 ? 'var(--danger)' : 'var(--text-primary)'}">${p.stock_level} ${p.unit}s</div>
+          </div>
+        </div>
+
+        ${p.ai_description ? `<div class="ai-result" style="margin-bottom:.75rem;font-size:.78rem">✨ ${p.ai_description}</div>` : ''}
+
+        <div style="display:flex;gap:.5rem;flex-wrap:wrap">
+          <button class="btn btn-ghost btn-sm" onclick="editProduct(${p.id})">Edit</button>
+          <button class="ai-btn" onclick="generateAIForProduct(${p.id}, this)">✨ Gen AI Desc</button>
+          <button class="btn btn-danger btn-sm" onclick="deleteProduct(${p.id})" style="margin-left:auto">Delete</button>
+        </div>
+      </div>
+    `).join('');
+  }
+
+  function filterProducts() {
+    const q = document.getElementById('searchInput').value.toLowerCase();
+    const cat = document.getElementById('filterCategory').value;
+    let filtered = allProducts;
+    if (q) filtered = filtered.filter(p => p.name.toLowerCase().includes(q) || p.sku.toLowerCase().includes(q));
+    if (cat) filtered = filtered.filter(p => p.category === cat);
+    renderProducts(filtered);
+  }
+
+  // ── AI Description (Gen AI Integration) ───────────────────
+
+  async function generateAIForProduct(productId, btn) {
+    const orig = btn.textContent;
+    btn.textContent = '⏳ Generating...';
+    btn.disabled = true;
+    try {
+      const result = await API.generateAIDescription(productId);
+      showAlert(`✨ AI description generated: "${result.description.substring(0,80)}..."`, 'success');
+      loadProducts(); // Reload to show updated description
+    } catch (err) {
+      showAlert('AI generation failed: ' + err.message, 'error');
+    } finally {
+      btn.textContent = orig;
+      btn.disabled = false;
+    }
+  }
+
+  async function previewAIDesc() {
+    const name = document.getElementById('pName').value.trim();
+    const category = document.getElementById('pCategory').value.trim();
+    if (!name) { showAlert('Enter a product name first', 'error'); return; }
+
+    const btn = document.getElementById('aiPreviewBtn');
+    const box = document.getElementById('aiPreviewBox');
+    btn.textContent = '⏳ Generating...';
+    btn.disabled = true;
+    box.style.display = 'none';
+
+    try {
+      const result = await API.previewAIDescription(name, category || null);
+      box.className = 'ai-result';
+      box.innerHTML = `✨ <strong>AI Preview:</strong> ${result.description}`;
+      box.style.display = 'block';
+    } catch (err) {
+      box.className = 'alert alert-error';
+      box.textContent = 'AI generation failed: ' + err.message;
+      box.style.display = 'block';
+    } finally {
+      btn.textContent = '✨ AI Description';
+      btn.disabled = false;
+    }
+  }
+
+  function clearAIPreview() { document.getElementById('aiPreviewBox').style.display = 'none'; }
+
+  // ── CRUD ───────────────────────────────────────────────────
+
+  function openModal(product = null) {
+    document.getElementById('productModal').classList.add('open');
+    document.getElementById('modalAlert').style.display = 'none';
+    document.getElementById('aiPreviewBox').style.display = 'none';
+    document.getElementById('modalTitle').textContent = product ? 'Edit Product' : 'Add Product';
+    document.getElementById('productId').value = product?.id || '';
+    document.getElementById('pName').value = product?.name || '';
+    document.getElementById('pSKU').value = product?.sku || '';
+    document.getElementById('pCategory').value = product?.category || '';
+    document.getElementById('pPrice').value = product?.unit_price || '';
+    document.getElementById('pStock').value = product?.stock_level ?? 0;
+    document.getElementById('pUnit').value = product?.unit || 'unit';
+    document.getElementById('pDesc').value = product?.description || '';
+  }
+
+  function closeModal() { document.getElementById('productModal').classList.remove('open'); }
+
+  async function editProduct(id) {
+    try {
+      const p = await API.getProduct(id);
+      openModal(p);
+    } catch(e) { showAlert(e.message, 'error'); }
+  }
+
+  async function saveProduct() {
+    const id = document.getElementById('productId').value;
+    const alertEl = document.getElementById('modalAlert');
+    alertEl.style.display = 'none';
+
+    const data = {
+      name: document.getElementById('pName').value.trim(),
+      sku: document.getElementById('pSKU').value.trim(),
+      category: document.getElementById('pCategory').value.trim() || undefined,
+      unit_price: parseFloat(document.getElementById('pPrice').value),
+      stock_level: parseInt(document.getElementById('pStock').value) || 0,
+      unit: document.getElementById('pUnit').value.trim() || 'unit',
+      description: document.getElementById('pDesc').value.trim() || undefined,
+    };
+
+    if (!data.name || !data.sku || !data.unit_price) {
+      alertEl.className = 'alert alert-error';
+      alertEl.textContent = 'Name, SKU, and unit price are required';
+      alertEl.style.display = 'block';
+      return;
+    }
+
+    const btn = document.getElementById('saveProductBtn');
+    btn.disabled = true; btn.textContent = 'Saving...';
+
+    try {
+      if (id) {
+        await API.updateProduct(id, data);
+        showAlert('✅ Product updated', 'success');
+      } else {
+        await API.createProduct(data);
+        showAlert('✅ Product created', 'success');
+      }
+      closeModal();
+      loadProducts();
+    } catch(err) {
+      alertEl.className = 'alert alert-error';
+      alertEl.textContent = err.message;
+      alertEl.style.display = 'block';
+    } finally {
+      btn.disabled = false; btn.textContent = 'Save Product';
+    }
+  }
+
+  async function deleteProduct(id) {
+    if (!confirm('Deactivate this product?')) return;
+    try {
+      await API.deleteProduct(id);
+      showAlert('Product deactivated.', 'success');
+      loadProducts();
+    } catch(err) { showAlert(err.message, 'error'); }
+  }
+
+  function showAlert(msg, type) {
+    const el = document.getElementById('alertBox');
+    el.className = `alert alert-${type}`;
+    el.textContent = msg;
+    el.style.display = 'block';
+    setTimeout(() => el.style.display = 'none', 6000);
+  }
+
+  loadProducts();
+</script>
+</body>
+</html>
