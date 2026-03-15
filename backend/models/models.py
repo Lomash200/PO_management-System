@@ -32,7 +32,7 @@ class Vendor(Base):
     contact_email = Column(String(255), nullable=False)
     contact_phone = Column(String(50))
     address = Column(Text)
-    rating = Column(Float, default=0.0)  # 0.0 - 5.0
+    rating = Column(Float, default=0.0)
     is_active = Column(Boolean, default=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
@@ -51,7 +51,7 @@ class Product(Base):
     stock_level = Column(Integer, default=0)
     unit = Column(String(50), default="unit")
     description = Column(Text)
-    ai_description = Column(Text)  # Stores AI-generated descriptions
+    ai_description = Column(Text)
     is_active = Column(Boolean, default=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
@@ -65,9 +65,9 @@ class PurchaseOrder(Base):
     id = Column(Integer, primary_key=True, index=True)
     reference_no = Column(String(50), unique=True, nullable=False, index=True)
     vendor_id = Column(Integer, ForeignKey("vendors.id"), nullable=False)
-    status = Column(Enum(POStatus), default=POStatus.DRAFT, nullable=False)
+    status = Column(Enum(POStatus, values_callable=lambda obj: [e.value for e in obj]), default=POStatus.DRAFT, nullable=False)
     subtotal = Column(Float, default=0.0)
-    tax_rate = Column(Float, default=0.05)   # 5% tax
+    tax_rate = Column(Float, default=0.05)
     tax_amount = Column(Float, default=0.0)
     total_amount = Column(Float, default=0.0)
     notes = Column(Text)
@@ -86,7 +86,7 @@ class PurchaseOrderItem(Base):
     purchase_order_id = Column(Integer, ForeignKey("purchase_orders.id", ondelete="CASCADE"), nullable=False)
     product_id = Column(Integer, ForeignKey("products.id"), nullable=False)
     quantity = Column(Integer, nullable=False, default=1)
-    unit_price = Column(Float, nullable=False)  # Price at time of order
+    unit_price = Column(Float, nullable=False)
     line_total = Column(Float, nullable=False)
 
     purchase_order = relationship("PurchaseOrder", back_populates="items")
